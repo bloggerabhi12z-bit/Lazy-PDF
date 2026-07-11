@@ -61,7 +61,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Try again
           </button>
-          <a
+          
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
@@ -78,7 +78,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Paperlane — Free In-Browser PDF Toolkit" },
+      { title: "Lazy PDF — Free In-Browser PDF Toolkit" },
       {
         name: "description",
         content:
@@ -86,14 +86,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "theme-color", content: "#faf7f2" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "Paperlane" },
+      { name: "apple-mobile-web-app-title", content: "Lazy PDF" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "format-detection", content: "telephone=no" },
-      { property: "og:site_name", content: "Paperlane" },
+      { property: "og:site_name", content: "Lazy PDF" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "en_US" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@paperlane" },
+      { name: "twitter:site", content: "@lazypdf" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "alternate", type: "application/rss+xml", title: "Paperlane Blog RSS", href: "/rss.xml" },
+      { rel: "alternate", type: "application/rss+xml", title: "Lazy PDF Blog RSS", href: "/rss.xml" },
     ],
     scripts: [
       {
@@ -114,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "Paperlane",
+          name: "Lazy PDF",
           url: "/",
           description:
             "Free in-browser PDF toolkit. Merge, split, compress, convert, and edit PDFs without uploads.",
@@ -126,7 +126,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Paperlane",
+          name: "Lazy PDF",
           url: "/",
           potentialAction: {
             "@type": "SearchAction",
