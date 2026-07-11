@@ -1,6 +1,6 @@
 {
-  "name": "Paperlane — In-browser PDF toolkit",
-  "short_name": "Paperlane",
+  "name": "Lazy PDF — In-browser PDF toolkit",
+  "short_name": "Lazy PDF",
   "description": "Merge, split, compress, convert, and edit PDFs directly in your browser. Fast, private, free.",
   "start_url": "/",
   "scope": "/",
