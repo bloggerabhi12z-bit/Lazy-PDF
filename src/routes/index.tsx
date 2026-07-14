@@ -1,12 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import {
-  ShieldCheck,
-  Zap,
-  MonitorSmartphone,
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
+import { ShieldCheck, Zap, MonitorSmartphone, ArrowRight, Sparkles } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { AdSlot } from "@/components/site/AdSlot";
@@ -83,8 +77,8 @@ function LandingPage() {
               <span className="ink-gradient-text">work with PDFs.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Merge, split, compress, rotate, and convert — right in your browser.
-              No sign-ups, no waiting queues, no files quietly sent to strangers.
+              Merge, split, compress, rotate, and convert — right in your browser. No sign-ups, no
+              waiting queues, no files quietly sent to strangers.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -94,7 +88,8 @@ function LandingPage() {
                 Browse tools <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                to="/tools/merge"
+                to="/tools/$slug"
+                params={{ slug: "merge" }}
                 className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-medium transition hover:border-signal"
               >
                 Try Merge PDF
@@ -173,9 +168,7 @@ function LandingPage() {
             <div className="text-xs font-semibold uppercase tracking-widest text-signal">
               The toolkit
             </div>
-            <h2 className="mt-2 font-display text-4xl md:text-5xl">
-              Five focused tools.
-            </h2>
+            <h2 className="mt-2 font-display text-4xl md:text-5xl">Five focused tools.</h2>
           </div>
           <Link
             to="/tools"
@@ -227,9 +220,21 @@ function LandingPage() {
         <h2 className="mt-2 font-display text-4xl md:text-5xl">Three steps. No fuss.</h2>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {[
-            { n: "01", t: "Pick a tool", d: "Choose from merge, split, compress, rotate, or JPG to PDF." },
-            { n: "02", t: "Drop your file", d: "Drag a PDF (or image) into the drop zone. It stays on your device." },
-            { n: "03", t: "Download", d: "The processed file is ready to save the moment it finishes." },
+            {
+              n: "01",
+              t: "Pick a tool",
+              d: "Choose from merge, split, compress, rotate, or JPG to PDF.",
+            },
+            {
+              n: "02",
+              t: "Drop your file",
+              d: "Drag a PDF (or image) into the drop zone. It stays on your device.",
+            },
+            {
+              n: "03",
+              t: "Download",
+              d: "The processed file is ready to save the moment it finishes.",
+            },
           ].map((s) => (
             <div key={s.n} className="relative rounded-2xl border border-border bg-card p-6">
               <div className="font-display text-6xl text-signal/30">{s.n}</div>
@@ -242,16 +247,12 @@ function LandingPage() {
 
       {/* FAQ */}
       <section id="faq" className="mx-auto max-w-3xl px-6 pt-24">
-        <div className="text-xs font-semibold uppercase tracking-widest text-signal">
-          FAQ
-        </div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-signal">FAQ</div>
         <h2 className="mt-2 font-display text-4xl md:text-5xl">Questions, answered.</h2>
         <Accordion type="single" collapsible className="mt-8">
           {faqs.map((f, i) => (
             <AccordionItem key={i} value={`item-${i}`}>
-              <AccordionTrigger className="text-left font-medium">
-                {f.q}
-              </AccordionTrigger>
+              <AccordionTrigger className="text-left font-medium">{f.q}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
             </AccordionItem>
           ))}

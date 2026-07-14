@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 function safeText(value: string) {
+  // eslint-disable-next-line no-control-regex -- intentional: strip to WinAnsi-safe chars for pdf-lib's StandardFonts
   return value.replace(/[^\x09\x0A\x0D\x20-\x7E]/g, " ");
 }
 
@@ -21,7 +22,10 @@ function wrapText(text: string, maxChars = 92) {
   return lines;
 }
 
-export async function createTextPdf(title: string, sections: Array<{ heading: string; body: string }>) {
+export async function createTextPdf(
+  title: string,
+  sections: Array<{ heading: string; body: string }>,
+) {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -37,7 +41,13 @@ export async function createTextPdf(title: string, sections: Array<{ heading: st
   };
   const drawLine = (line: string, size = 10, isBold = false) => {
     if (y < margin) newPage();
-    page.drawText(safeText(line), { x: margin, y, size, font: isBold ? bold : font, color: rgb(0.12, 0.13, 0.14) });
+    page.drawText(safeText(line), {
+      x: margin,
+      y,
+      size,
+      font: isBold ? bold : font,
+      color: rgb(0.12, 0.13, 0.14),
+    });
     y -= size + 5;
   };
 
