@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { PDFDocument } from "pdf-lib";
 import { DropZone } from "@/components/site/DropZone";
+import { SingleFilePicker } from "@/components/site/SingleFilePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { downloadBlob, formatBytes } from "@/lib/download";
+import { downloadBlob } from "@/lib/download";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -50,24 +51,17 @@ export function MetadataTool() {
       {!file ? (
         <DropZone onFiles={onFiles} accept={{ "application/pdf": [".pdf"] }} multiple={false} hint="Drop a PDF." />
       ) : (
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">{file.name}</div>
-              <div className="text-sm text-muted-foreground">{formatBytes(file.size)}</div>
-            </div>
-            <Button variant="ghost" onClick={() => setFile(null)}>Change</Button>
-          </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <SingleFilePicker file={file} onChange={() => setFile(null)}>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div><Label htmlFor="t">Title</Label><Input id="t" value={title} onChange={(e) => setTitle(e.target.value)} className="mt-1" /></div>
             <div><Label htmlFor="a">Author</Label><Input id="a" value={author} onChange={(e) => setAuthor(e.target.value)} className="mt-1" /></div>
             <div><Label htmlFor="s">Subject</Label><Input id="s" value={subject} onChange={(e) => setSubject(e.target.value)} className="mt-1" /></div>
             <div><Label htmlFor="k">Keywords (comma-separated)</Label><Input id="k" value={keywords} onChange={(e) => setKeywords(e.target.value)} className="mt-1" /></div>
           </div>
-        </div>
+        </SingleFilePicker>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save metadata
         </Button>

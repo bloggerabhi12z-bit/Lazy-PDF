@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { PDFDocument } from "pdf-lib";
 import { DropZone } from "@/components/site/DropZone";
+import { SingleFilePicker } from "@/components/site/SingleFilePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { downloadBlob, formatBytes } from "@/lib/download";
+import { downloadBlob } from "@/lib/download";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -63,17 +64,9 @@ export function SplitTool() {
           hint="Drop one PDF to split."
         />
       ) : (
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">{file.name}</div>
-              <div className="text-sm text-muted-foreground">
-                {formatBytes(file.size)} · {pageCount} pages
-              </div>
-            </div>
-            <Button variant="ghost" onClick={() => setFile(null)}>Change</Button>
-          </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <SingleFilePicker file={file} onChange={() => setFile(null)}>
+          <div className="text-xs text-muted-foreground mb-4">{pageCount} pages</div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="from">From page</Label>
               <Input id="from" type="number" min={1} max={pageCount} value={from} onChange={(e) => setFrom(+e.target.value)} className="mt-1" />
@@ -83,10 +76,10 @@ export function SplitTool() {
               <Input id="to" type="number" min={1} max={pageCount} value={to} onChange={(e) => setTo(+e.target.value)} className="mt-1" />
             </div>
           </div>
-        </div>
+        </SingleFilePicker>
       )}
       <div className="flex justify-end">
-        <Button onClick={split} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={split} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Extract pages
         </Button>

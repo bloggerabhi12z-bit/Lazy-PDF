@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { PDFDocument } from "pdf-lib";
 import { DropZone } from "@/components/site/DropZone";
+import { FileList } from "@/components/site/FileList";
 import { Button } from "@/components/ui/button";
-import { downloadBlob, formatBytes } from "@/lib/download";
-import { X, GripVertical, Loader2 } from "lucide-react";
+import { downloadBlob } from "@/lib/download";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function MergeTool() {
@@ -54,29 +55,10 @@ export function MergeTool() {
         hint="Add two or more PDFs. Drag rows to reorder."
       />
 
-      {files.length > 0 && (
-        <ul className="divide-y divide-border rounded-2xl border border-border bg-card">
-          {files.map((f, i) => (
-            <li key={i} className="flex items-center gap-3 p-3">
-              <GripVertical className="h-4 w-4 text-muted-foreground" />
-              <div className="flex-1 truncate">
-                <div className="truncate text-sm font-medium">{f.name}</div>
-                <div className="text-xs text-muted-foreground">{formatBytes(f.size)}</div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
-                <Button variant="ghost" size="sm" onClick={() => move(i, 1)} disabled={i === files.length - 1}>↓</Button>
-                <Button variant="ghost" size="icon" onClick={() => remove(i)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <FileList files={files} onRemove={remove} onMove={move} />
 
       <div className="flex justify-end">
-        <Button onClick={merge} disabled={busy || files.length < 2} size="lg">
+        <Button variant="action" size="xl" onClick={merge} disabled={busy || files.length < 2}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Merge {files.length > 0 && `${files.length} file${files.length > 1 ? "s" : ""}`}
         </Button>

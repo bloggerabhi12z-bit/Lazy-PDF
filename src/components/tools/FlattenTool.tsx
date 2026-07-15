@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { PDFDocument } from "pdf-lib";
 import { DropZone } from "@/components/site/DropZone";
+import { SingleFilePicker } from "@/components/site/SingleFilePicker";
 import { Button } from "@/components/ui/button";
-import { downloadBlob, formatBytes } from "@/lib/download";
+import { downloadBlob } from "@/lib/download";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,18 +36,12 @@ export function FlattenTool() {
       {!file ? (
         <DropZone onFiles={(fs) => setFile(fs[0] ?? null)} accept={{ "application/pdf": [".pdf"] }} multiple={false} hint="Drop a PDF with form fields." />
       ) : (
-        <div className="rounded-2xl border border-border bg-card p-6 flex items-center justify-between">
-          <div>
-            <div className="font-medium">{file.name}</div>
-            <div className="text-sm text-muted-foreground">{formatBytes(file.size)}</div>
-          </div>
-          <Button variant="ghost" onClick={() => setFile(null)}>Change</Button>
-        </div>
+        <SingleFilePicker file={file} onChange={() => setFile(null)} />
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Flatten
+          Flatten PDF
         </Button>
       </div>
     </div>

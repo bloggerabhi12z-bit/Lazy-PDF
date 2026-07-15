@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { DropZone } from "@/components/site/DropZone";
+import { SingleFilePicker } from "@/components/site/SingleFilePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { downloadBlob, formatBytes } from "@/lib/download";
+import { downloadBlob } from "@/lib/download";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,15 +49,8 @@ export function WatermarkTool() {
       {!file ? (
         <DropZone onFiles={(fs) => setFile(fs[0] ?? null)} accept={{ "application/pdf": [".pdf"] }} multiple={false} hint="Drop a PDF." />
       ) : (
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">{file.name}</div>
-              <div className="text-sm text-muted-foreground">{formatBytes(file.size)}</div>
-            </div>
-            <Button variant="ghost" onClick={() => setFile(null)}>Change</Button>
-          </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <SingleFilePicker file={file} onChange={() => setFile(null)}>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="wm">Watermark text</Label>
               <Input id="wm" value={text} onChange={(e) => setText(e.target.value)} className="mt-1" />
@@ -66,10 +60,10 @@ export function WatermarkTool() {
               <input id="op" type="range" min={0.05} max={1} step={0.05} value={opacity} onChange={(e) => setOpacity(+e.target.value)} className="mt-3 w-full" />
             </div>
           </div>
-        </div>
+        </SingleFilePicker>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy || !text} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy || !text}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Add watermark
         </Button>

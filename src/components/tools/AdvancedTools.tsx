@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { downloadBlob, formatBytes } from "@/lib/download";
 import { canvasToBlob, extractPdfText, loadPdf, renderPdfPageToCanvas } from "@/lib/pdf-render";
 import { createTextPdf, stripHtml } from "@/lib/text-pdf";
-import { Loader2 } from "lucide-react";
+import { FileText, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
 function SinglePdfPicker({
@@ -37,14 +37,19 @@ function SinglePdfPicker({
     );
   }
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-6">
-      <div className="min-w-0">
-        <div className="truncate font-medium">{file.name}</div>
-        <div className="text-sm text-muted-foreground">{formatBytes(file.size)}</div>
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-signal-soft text-signal">
+          <FileText className="h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-medium">{file.name}</div>
+          <div className="text-sm text-muted-foreground">{formatBytes(file.size)}</div>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => onFile(null)} aria-label="Remove file">
+          <X className="h-4 w-4" />
+        </Button>
       </div>
-      <Button variant="ghost" onClick={() => onFile(null)}>
-        Change
-      </Button>
     </div>
   );
 }
@@ -119,7 +124,7 @@ export function PdfToImagesTool({ type }: { type: "jpg" | "png" }) {
         />
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Convert to {type.toUpperCase()}
         </Button>
       </div>
@@ -155,7 +160,7 @@ export function ExtractTextTool() {
       <SinglePdfPicker file={file} onFile={setFile} />
       {text && <Textarea value={text} readOnly className="min-h-56" />}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Extract text
         </Button>
       </div>
@@ -221,7 +226,7 @@ function ImagesToPdfCaptureTool({
         </div>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!files.length || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!files.length || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Create PDF
         </Button>
       </div>
@@ -272,7 +277,7 @@ export function CropPdfTool() {
         </div>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Crop PDF
         </Button>
       </div>
@@ -342,7 +347,7 @@ export function EditPdfTool() {
         </div>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy || !text} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy || !text}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Apply edit
         </Button>
       </div>
@@ -399,7 +404,7 @@ export function RedactPdfTool() {
         </div>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Redact
         </Button>
       </div>
@@ -442,7 +447,7 @@ export function RemoveWatermarkTool() {
         hint="Drop a PDF. This covers the central watermark area on each page."
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Remove watermark
         </Button>
       </div>
@@ -486,7 +491,7 @@ export function ProtectPdfTool() {
         />
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || !password || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || !password || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Protect PDF
         </Button>
       </div>
@@ -535,7 +540,7 @@ export function UnlockPdfTool() {
         />
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Unlock PDF
         </Button>
       </div>
@@ -572,7 +577,7 @@ export function SignPdfTool() {
       />
       {file && <Input value={signature} onChange={(event) => setSignature(event.target.value)} />}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || !signature || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || !signature || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Sign PDF
         </Button>
       </div>
@@ -647,7 +652,7 @@ export function FillFormsTool() {
         </div>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Fill form
         </Button>
       </div>
@@ -705,7 +710,7 @@ export function ComparePdfsTool() {
       )}
       {report && <Textarea value={report} readOnly className="min-h-56" />}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={files.length < 2 || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={files.length < 2 || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Compare PDFs
         </Button>
       </div>
@@ -746,7 +751,7 @@ export function OcrPdfTool() {
         hint="Drop a scanned PDF to OCR in your browser."
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Run OCR
         </Button>
       </div>
@@ -892,7 +897,7 @@ export function HtmlToPdfTool() {
         className="min-h-64 font-mono"
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Convert HTML
         </Button>
       </div>
@@ -976,7 +981,7 @@ function FileToPdf({
         </div>
       )}
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {label}
         </Button>
@@ -1055,7 +1060,7 @@ function PdfTextExportTool({ type }: { type: "word" | "excel" }) {
         hint={`Drop a PDF to export text to ${type === "word" ? "Word" : "Excel"}.`}
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Export to{" "}
           {type === "word" ? "Word" : "Excel"}
         </Button>
@@ -1101,7 +1106,7 @@ export function PdfToPowerPointTool() {
         hint="Drop a PDF to turn each page into a slide."
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Export PowerPoint
         </Button>
       </div>
@@ -1134,7 +1139,7 @@ export function PdfToHtmlTool() {
         hint="Drop a PDF to export a text-based HTML file."
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Export HTML
         </Button>
       </div>
@@ -1193,7 +1198,7 @@ export function PdfToEpubTool() {
         hint="Drop a PDF to export a text-based EPUB."
       />
       <div className="flex justify-end">
-        <Button onClick={run} disabled={!file || busy} size="lg">
+        <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Export EPUB
         </Button>
       </div>

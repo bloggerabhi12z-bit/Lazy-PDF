@@ -19,10 +19,10 @@ export function DropZone({ onFiles, accept, multiple = true, hint }: DropZonePro
   return (
     <div
       {...getRootProps()}
-      className={`group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed p-10 text-center transition hover:scale-[1.005] ${
+      className={`group relative cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed p-12 text-center transition-all ${
         isDragActive
-          ? "border-signal bg-signal-soft/60"
-          : "border-border bg-card/60 hover:border-signal/60"
+          ? "scale-[1.01] border-signal bg-signal-soft/70"
+          : "border-border bg-gradient-to-b from-card to-secondary/40 hover:scale-[1.005] hover:border-signal/70 hover:shadow-lg"
       }`}
     >
       <input
@@ -42,15 +42,18 @@ export function DropZone({ onFiles, accept, multiple = true, hint }: DropZonePro
         })}
       />
       <motion.div
-        animate={{ y: isDragActive ? -4 : 0 }}
-        className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground"
+        animate={{ y: isDragActive ? -6 : 0, scale: isDragActive ? 1.05 : 1 }}
+        className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-signal text-ink shadow-md shadow-signal/30 transition-transform group-hover:-translate-y-1"
       >
-        <UploadCloud className="h-6 w-6" />
+        <UploadCloud className="h-8 w-8" />
       </motion.div>
-      <div className="mt-4 font-display text-xl">
-        {isDragActive ? "Drop your files" : "Drop files here or click to upload"}
+      <div className="mt-5 font-display text-2xl">
+        {isDragActive ? "Drop your files" : "Select PDF files"}
       </div>
-      {hint && <p className="mt-2 text-sm text-muted-foreground">{hint}</p>}
+      <p className="mt-1 text-sm text-muted-foreground">
+        {isDragActive ? "" : "or drag and drop here"}
+      </p>
+      {hint && <p className="mt-3 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
