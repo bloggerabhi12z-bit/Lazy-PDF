@@ -26,6 +26,10 @@ export function Header() {
           <a href="/#faq" className="text-muted-foreground hover:text-foreground transition">
             FAQ
           </a>
+          {/* New Leadership Tab */}
+          <a href="/#leadership" className="text-muted-foreground hover:text-foreground transition">
+            Leadership
+          </a>
         </nav>
         <Link
           to="/tools"
