@@ -259,46 +259,62 @@ function LandingPage() {
         </Accordion>
       </section>
 
-      {/* Leadership Section */}
-      <section id="leadership" className="mx-auto max-w-4xl px-6 pt-24 pb-12">
-        <div className="text-xs font-semibold uppercase tracking-widest text-signal">
-          Leadership
-        </div>
-        <h2 className="mt-2 font-display text-4xl md:text-5xl">Meet the Team</h2>
-        <p className="mt-4 text-base text-muted-foreground max-w-xl">
-          We build modern, private tools that run natively inside your browser. No cloud architecture, no data collection.
-        </p>
+     {/* Leadership Section */}
+           <section id="leadership" className="mx-auto max-w-4xl px-6 pt-24 pb-12">
+             <div className="text-xs font-semibold uppercase tracking-widest text-signal">
+               Leadership
+             </div>
+             <h2 className="mt-2 font-display text-4xl md:text-5xl">Meet the Team</h2>
+             <p className="mt-4 text-base text-muted-foreground max-w-xl">
+               We build modern, private tools that run natively inside your browser. No cloud architecture, no data collection.
+             </p>
 
-        <div className="mt-12 grid gap-8 sm:grid-cols-2">
-          {/* CEO Profile Card */}
-          <div className="group flex items-center gap-5 rounded-2xl border border-border bg-card/40 p-5 transition hover:border-signal hover:shadow-md">
-            <img
-              className="h-20 w-20 rounded-xl object-cover border border-border shadow-inner bg-muted"
-              src="/ceo.jpg"
-              alt="Abhishek Zadokar"
-            />
-            <div>
-              <div className="font-display text-xl font-medium tracking-tight">Abhishek Zadokar</div>
-              <div className="text-sm font-medium text-signal mt-0.5">Chief Executive Officer</div>
-              <p className="text-xs text-muted-foreground mt-1.5">Product direction & strategies.</p>
-            </div>
-          </div>
+             <div className="mt-12 grid gap-8 sm:grid-cols-2">
+               {/* CEO Profile Card */}
+               <a
+                 href="https://www.linkedin.com/in/abhishek-zadokar/"
+                 target="_blank"
+                 rel="noreferrer"
+                 className="group flex flex-col sm:flex-row items-center sm:items-start gap-5 rounded-2xl border border-border bg-card/40 p-5 transition hover:border-signal hover:shadow-md cursor-pointer"
+               >
+                 <img
+                   className="h-20 w-20 rounded-xl object-cover border border-border shadow-inner bg-muted shrink-0 transition group-hover:scale-[1.03]"
+                   src="/ceo.jpg"
+                   alt="Abhishek Zadokar"
+                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                 />
+                 <div className="text-center sm:text-left">
+                   <div className="font-display text-xl font-medium tracking-tight">Abhishek Zadokar</div>
+                   <div className="text-sm font-medium text-signal mt-0.5">Chief Executive Officer</div>
+                   <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                     Product strategist and developer transforming complex client workflows into elegant, high-performance web experiences.
+                   </p>
+                 </div>
+               </a>
 
-          {/* CTO Profile Card */}
-          <div className="group flex items-center gap-5 rounded-2xl border border-border bg-card/40 p-5 transition hover:border-signal hover:shadow-md">
-            <img
-              className="h-20 w-20 rounded-xl object-cover border border-border shadow-inner bg-muted"
-              src="/cto.jpg"
-              alt="Aditya Phate"
-            />
-            <div>
-              <div className="font-display text-xl font-medium tracking-tight">Aditya Phate</div>
-              <div className="text-sm font-medium text-signal mt-0.5">Chief Technology Officer</div>
-              <p className="text-xs text-muted-foreground mt-1.5">Architecture & client performance.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+               {/* CTO Profile Card */}
+               <a
+                 href="https://www.linkedin.com/in/adityalphate/"
+                 target="_blank"
+                 rel="noreferrer"
+                 className="group flex flex-col sm:flex-row items-center sm:items-start gap-5 rounded-2xl border border-border bg-card/40 p-5 transition hover:border-signal hover:shadow-md cursor-pointer"
+               >
+                 <img
+                   className="h-20 w-20 rounded-xl object-cover border border-border shadow-inner bg-muted shrink-0 transition group-hover:scale-[1.03]"
+                   src="/cto.jpg"
+                   alt="Aditya Phate"
+                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                 />
+                 <div className="text-center sm:text-left">
+                   <div className="font-display text-xl font-medium tracking-tight">Aditya Phate</div>
+                   <div className="text-sm font-medium text-signal mt-0.5">Chief Technology Officer</div>
+                   <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                     Backend and Big Data Engineer specializing in robust client-side technical architectures, performance tuning, and safe data execution layers.
+                   </p>
+                 </div>
+               </a>
+             </div>
+           </section>
 
       <Footer />
     </div>
