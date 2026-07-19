@@ -135,10 +135,12 @@ function PdfCanvasPreview({ url, name }: { url: string; name: string }) {
   const [pages, setPages] = useState<string[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let cancelled = false;
     setPages([]);
     setLoading(true);
+
     (async () => {
       try {
         const { loadPdf, renderPdfPageToCanvas, canvasToBlob } = await import("@/lib/pdf-render");
@@ -146,35 +148,50 @@ function PdfCanvasPreview({ url, name }: { url: string; name: string }) {
         const blob = await res.blob();
         const file = new File([blob], name, { type: "application/pdf" });
         const pdf = await loadPdf(file);
+
         if (cancelled) return;
         setTotal(pdf.numPages);
-        const max = Math.min(pdf.numPages, 5);
-        for (let i = 1; i <= max; i++) {
+
+        // REMOVED THE CAPPING SAFEGUARD: Loops through every single page in the doc
+        for (let i = 1; i <= pdf.numPages; i++) {
           if (cancelled) return;
-          const canvas = await renderPdfPageToCanvas(pdf, i, 1.4);
-          const b = await canvasToBlob(canvas, "image/jpeg", 0.85);
+
+          const canvas = await renderPdfPageToCanvas(pdf, i, 1.3); // Balanced rendering resolution scale
+          const b = await canvasToBlob(canvas, "image/jpeg", 0.8);
           const u = URL.createObjectURL(b);
-          setPages((prev) => [...prev, u]);
+
+          if (!cancelled) {
+            setPages((prev) => [...prev, u]);
+          }
         }
-      } catch {
-        /* noop */
+      } catch (err) {
+        console.error("Preview loop failure:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => { cancelled = true; };
   }, [url, name]);
+
   return (
-    <div className="h-[420px] overflow-auto rounded-xl bg-white p-3">
+    <div className="h-[460px] overflow-auto rounded-xl bg-white p-4 shadow-inner">
       {loading && pages.length === 0 && (
-        <div className="grid h-full place-items-center text-xs text-muted-foreground">Rendering preview…</div>
+        <div className="grid h-full place-items-center text-xs text-muted-foreground animate-pulse">
+          Generating core file previews...
+        </div>
       )}
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-4">
         {pages.map((src, i) => (
-          <img key={i} src={src} alt={`Page ${i + 1}`} className="max-w-full rounded shadow" />
+          <div key={i} className="relative w-full flex flex-col items-center">
+            <img src={src} alt={`Page ${i + 1}`} className="max-w-full rounded shadow-md border border-border/40" />
+            <span className="text-[10px] mt-1 text-muted-foreground font-medium">Page {i + 1} of {total}</span>
+          </div>
         ))}
-        {!loading && total > pages.length && (
-          <div className="text-xs text-muted-foreground">Showing first {pages.length} of {total} pages — download to see all.</div>
+        {loading && pages.length > 0 && (
+          <div className="text-xs text-signal font-medium animate-pulse mt-2">
+            Rendering remaining pages ({pages.length} / {total})...
+          </div>
         )}
       </div>
     </div>
