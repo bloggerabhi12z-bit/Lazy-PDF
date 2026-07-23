@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PDFDocument } from "pdf-lib";
 import { DropZone } from "@/components/site/DropZone";
 import { SingleFilePicker } from "@/components/site/SingleFilePicker";
@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { downloadBlob } from "@/lib/download";
-import { Loader2 } from "lucide-react";
+import { canvasToBlob, loadPdf, renderPdfPageToCanvas } from "@/lib/pdf-render";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function SplitTool() {
@@ -15,6 +16,8 @@ export function SplitTool() {
   const [from, setFrom] = useState(1);
   const [to, setTo] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [rangeAnchor, setRangeAnchor] = useState<number | null>(null);
 
   async function onFiles(files: File[]) {
     const f = files[0];
@@ -27,6 +30,52 @@ export function SplitTool() {
       setTo(doc.getPageCount());
     } catch {
       toast.error("Could not read that PDF.");
+    }
+  }
+
+  // Render a thumbnail per page so the user can see what they're selecting,
+  // instead of guessing page numbers blind.
+  useEffect(() => {
+    let cancelled = false;
+    const urls: string[] = [];
+
+    if (!file || !pageCount) {
+      setThumbnails([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        const pdf = await loadPdf(file);
+        for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+          if (cancelled) return;
+          const canvas = await renderPdfPageToCanvas(pdf, pageNumber, 0.35);
+          const blob = await canvasToBlob(canvas, "image/jpeg", 0.7);
+          const url = URL.createObjectURL(blob);
+          urls.push(url);
+          if (!cancelled) setThumbnails((prev) => [...prev, url]);
+        }
+      } catch {
+        // Password-protected or malformed — the numeric inputs still work.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, pageCount]);
+
+  function selectPage(pageNumber: number) {
+    if (rangeAnchor === null) {
+      setRangeAnchor(pageNumber);
+      setFrom(pageNumber);
+      setTo(pageNumber);
+    } else {
+      setFrom(Math.min(rangeAnchor, pageNumber));
+      setTo(Math.max(rangeAnchor, pageNumber));
+      setRangeAnchor(null);
     }
   }
 
@@ -65,17 +114,75 @@ export function SplitTool() {
         />
       ) : (
         <SingleFilePicker file={file} onChange={() => setFile(null)}>
-          <div className="text-xs text-muted-foreground mb-4">{pageCount} pages</div>
+          <div className="text-xs text-muted-foreground mb-4">
+            {pageCount} pages · click a page to start a range, click another to finish it
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="from">From page</Label>
-              <Input id="from" type="number" min={1} max={pageCount} value={from} onChange={(e) => setFrom(+e.target.value)} className="mt-1" />
+              <Input
+                id="from"
+                type="number"
+                min={1}
+                max={pageCount}
+                value={from}
+                onChange={(e) => {
+                  setRangeAnchor(null);
+                  setFrom(+e.target.value);
+                }}
+                className="mt-1"
+              />
             </div>
             <div>
               <Label htmlFor="to">To page</Label>
-              <Input id="to" type="number" min={1} max={pageCount} value={to} onChange={(e) => setTo(+e.target.value)} className="mt-1" />
+              <Input
+                id="to"
+                type="number"
+                min={1}
+                max={pageCount}
+                value={to}
+                onChange={(e) => {
+                  setRangeAnchor(null);
+                  setTo(+e.target.value);
+                }}
+                className="mt-1"
+              />
             </div>
           </div>
+
+          {thumbnails.length > 0 && (
+            <div className="mt-5 grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8">
+              {thumbnails.map((url, i) => {
+                const pageNumber = i + 1;
+                const inRange = pageNumber >= from && pageNumber <= to;
+                const isAnchor = rangeAnchor === pageNumber;
+                return (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => selectPage(pageNumber)}
+                    className={`group relative aspect-[3/4] overflow-hidden rounded-lg border-2 bg-white shadow-sm transition-all ${
+                      inRange
+                        ? "border-signal ring-2 ring-signal/30"
+                        : "border-border/60 hover:border-signal/50"
+                    } ${isAnchor ? "ring-2 ring-signal" : ""}`}
+                  >
+                    <img src={url} alt={`Page ${pageNumber}`} className="h-full w-full object-contain" />
+                    {inRange && (
+                      <div className="absolute inset-0 bg-signal/10">
+                        <div className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-signal text-signal-foreground">
+                          <Check className="h-3 w-3" />
+                        </div>
+                      </div>
+                    )}
+                    <span className="absolute bottom-0.5 left-0.5 rounded bg-card/90 px-1 text-[9px] font-semibold text-muted-foreground">
+                      {pageNumber}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </SingleFilePicker>
       )}
       <div className="flex justify-end">
