@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import JSZip from "jszip";
 import * as XLSX from "xlsx";
@@ -7,6 +7,7 @@ import PptxGenJS from "pptxgenjs";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { createWorker } from "tesseract.js";
 import { DropZone } from "@/components/site/DropZone";
+import { ToolProgressBar } from "@/components/site/ToolProgressBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,12 @@ import { createTextPdf, stripHtml } from "@/lib/text-pdf";
 import { FileText, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
+/**
+ * Single-PDF picker used across the "advanced" tools. Mirrors MergeTool's card:
+ * a live canvas-rendered thumbnail of page 1 plus a page count badge, instead
+ * of a generic file icon, so every tool in this file gets the same visual
+ * quality without touching each tool individually.
+ */
 function SinglePdfPicker({
   file,
   onFile,
@@ -26,6 +33,43 @@ function SinglePdfPicker({
   onFile: (file: File | null) => void;
   hint?: string;
 }) {
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | undefined>();
+  const [pageCount, setPageCount] = useState<number | undefined>();
+
+  useEffect(() => {
+    let cancelled = false;
+    let objectUrl: string | undefined;
+
+    if (!file) {
+      setThumbnailUrl(undefined);
+      setPageCount(undefined);
+      return;
+    }
+
+    (async () => {
+      try {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const doc = await PDFDocument.load(bytes, { updateMetadata: false }).catch(() => null);
+        if (!cancelled && doc) setPageCount(doc.getPageCount());
+
+        const pdf = await loadPdf(file).catch(() => null);
+        if (!pdf || cancelled) return;
+        const canvas = await renderPdfPageToCanvas(pdf, 1, 0.4);
+        const blob = await canvasToBlob(canvas, "image/jpeg", 0.7);
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(blob);
+        setThumbnailUrl(objectUrl);
+      } catch {
+        // Password-protected or malformed files simply fall back to the icon.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
+
   if (!file) {
     return (
       <DropZone
@@ -39,12 +83,21 @@ function SinglePdfPicker({
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="flex items-center gap-4">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-signal-soft text-signal">
-          <FileText className="h-6 w-6" />
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg border border-border/60 bg-white shadow-sm">
+          {thumbnailUrl ? (
+            <img src={thumbnailUrl} alt="PDF preview" className="h-full w-full object-contain" />
+          ) : (
+            <div className="grid h-full w-full place-items-center bg-signal-soft text-signal">
+              <FileText className="h-6 w-6" />
+            </div>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{file.name}</div>
-          <div className="text-sm text-muted-foreground">{formatBytes(file.size)}</div>
+          <div className="text-sm text-muted-foreground">
+            {formatBytes(file.size)}
+            {pageCount ? ` · ${pageCount} ${pageCount === 1 ? "page" : "pages"}` : ""}
+          </div>
         </div>
         <Button variant="ghost" size="icon" onClick={() => onFile(null)} aria-label="Remove file">
           <X className="h-4 w-4" />
@@ -79,7 +132,12 @@ function xmlText(value: string) {
     .trim();
 }
 
-async function renderPdfToImageZip(file: File, type: "jpg" | "png", password?: string) {
+async function renderPdfToImageZip(
+  file: File,
+  type: "jpg" | "png",
+  password?: string,
+  onProgress?: (current: number, total: number) => void,
+) {
   const pdf = await loadPdf(file, password);
   const zip = new JSZip();
   const mime = type === "jpg" ? "image/jpeg" : "image/png";
@@ -87,6 +145,7 @@ async function renderPdfToImageZip(file: File, type: "jpg" | "png", password?: s
     const canvas = await renderPdfPageToCanvas(pdf, pageNumber, 2);
     const blob = await canvasToBlob(canvas, mime, type === "jpg" ? 0.92 : undefined);
     zip.file(`page-${String(pageNumber).padStart(3, "0")}.${type}`, blob);
+    onProgress?.(pageNumber, pdf.numPages);
   }
   return zip.generateAsync({ type: "blob" });
 }
@@ -95,17 +154,22 @@ export function PdfToImagesTool({ type }: { type: "jpg" | "png" }) {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   async function run() {
     if (!file) return;
     setBusy(true);
+    setProgress({ current: 0, total: 1 });
     try {
-      const zip = await renderPdfToImageZip(file, type, password);
+      const zip = await renderPdfToImageZip(file, type, password, (current, total) =>
+        setProgress({ current, total }),
+      );
       downloadBlob(zip, `paperlane-${type}-pages.zip`, "application/zip");
       toast.success(`${type.toUpperCase()} pages ready.`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Conversion failed.");
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
   return (
@@ -122,6 +186,9 @@ export function PdfToImagesTool({ type }: { type: "jpg" | "png" }) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+      )}
+      {progress && (
+        <ToolProgressBar current={progress.current} total={progress.total} label="Rendering pages" />
       )}
       <div className="flex justify-end">
         <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
@@ -721,17 +788,20 @@ export function ComparePdfsTool() {
 export function OcrPdfTool() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   async function run() {
     if (!file) return;
     setBusy(true);
     try {
       const pdf = await loadPdf(file);
+      setProgress({ current: 0, total: pdf.numPages });
       const worker = await createWorker("eng");
       const out: string[] = [];
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
         const canvas = await renderPdfPageToCanvas(pdf, pageNumber, 1.5);
         const result = await worker.recognize(canvas);
         out.push(`Page ${pageNumber}\n${result.data.text}`);
+        setProgress({ current: pageNumber, total: pdf.numPages });
       }
       await worker.terminate();
       const text = out.join("\n\n");
@@ -741,6 +811,7 @@ export function OcrPdfTool() {
       toast.error(error instanceof Error ? error.message : "OCR failed.");
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
   return (
@@ -750,6 +821,9 @@ export function OcrPdfTool() {
         onFile={setFile}
         hint="Drop a scanned PDF to OCR in your browser."
       />
+      {progress && (
+        <ToolProgressBar current={progress.current} total={progress.total} label="Reading text from pages" />
+      )}
       <div className="flex justify-end">
         <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Run OCR
@@ -1072,11 +1146,13 @@ function PdfTextExportTool({ type }: { type: "word" | "excel" }) {
 export function PdfToPowerPointTool() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   async function run() {
     if (!file) return;
     setBusy(true);
     try {
       const pdf = await loadPdf(file);
+      setProgress({ current: 0, total: pdf.numPages });
       const pptx = new PptxGenJS();
       pptx.layout = "LAYOUT_WIDE";
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
@@ -1084,6 +1160,7 @@ export function PdfToPowerPointTool() {
         const data = await blobToDataUrl(await canvasToBlob(canvas, "image/png"));
         const slide = pptx.addSlide();
         slide.addImage({ data, x: 0, y: 0, w: 13.333, h: 7.5 });
+        setProgress({ current: pageNumber, total: pdf.numPages });
       }
       const blob = (await pptx.write({ outputType: "blob" })) as Blob;
       downloadBlob(
@@ -1096,6 +1173,7 @@ export function PdfToPowerPointTool() {
       toast.error(error instanceof Error ? error.message : "PowerPoint export failed.");
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
   return (
@@ -1105,6 +1183,9 @@ export function PdfToPowerPointTool() {
         onFile={setFile}
         hint="Drop a PDF to turn each page into a slide."
       />
+      {progress && (
+        <ToolProgressBar current={progress.current} total={progress.total} label="Building slides" />
+      )}
       <div className="flex justify-end">
         <Button variant="action" size="xl" onClick={run} disabled={!file || busy}>
           {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Export PowerPoint
