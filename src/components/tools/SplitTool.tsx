@@ -114,9 +114,49 @@ export function SplitTool() {
         />
       ) : (
         <SingleFilePicker file={file} onChange={() => setFile(null)}>
-          <div className="text-xs text-muted-foreground mb-4">
-            {pageCount} pages · click a page to start a range, click another to finish it
-          </div>
+          <div className="text-xs text-muted-foreground mb-4">{pageCount} pages</div>
+
+          {/* Range preview — mirrors iLovePDF's dashed "Range" box: shows the
+              endpoints of the current selection, collapsing the middle with
+              "..." once the range gets long, instead of always showing every page. */}
+          {thumbnails.length > 0 && (
+            <div className="mb-6">
+              <div className="mb-2 text-sm font-medium text-foreground">Range 1</div>
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-dashed border-border p-4">
+                {(() => {
+                  const rangePages = Array.from({ length: Math.max(0, to - from + 1) }, (_, i) => from + i);
+                  const showAll = rangePages.length <= 5;
+                  const shown = showAll
+                    ? rangePages
+                    : [...rangePages.slice(0, 2), null, ...rangePages.slice(-2)];
+                  return shown.map((pageNumber, idx) =>
+                    pageNumber === null ? (
+                      <span key={`ellipsis-${idx}`} className="text-lg font-semibold text-muted-foreground">
+                        …
+                      </span>
+                    ) : (
+                      <div
+                        key={pageNumber}
+                        className="relative aspect-[3/4] w-16 overflow-hidden rounded-md border border-border/60 bg-white shadow-sm"
+                      >
+                        {thumbnails[pageNumber - 1] && (
+                          <img
+                            src={thumbnails[pageNumber - 1]}
+                            alt={`Page ${pageNumber}`}
+                            className="h-full w-full object-contain"
+                          />
+                        )}
+                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 rounded bg-card/90 px-1 text-[9px] font-semibold text-muted-foreground">
+                          {pageNumber}
+                        </span>
+                      </div>
+                    ),
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="from">From page</Label>
@@ -151,37 +191,42 @@ export function SplitTool() {
           </div>
 
           {thumbnails.length > 0 && (
-            <div className="mt-5 grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8">
-              {thumbnails.map((url, i) => {
-                const pageNumber = i + 1;
-                const inRange = pageNumber >= from && pageNumber <= to;
-                const isAnchor = rangeAnchor === pageNumber;
-                return (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => selectPage(pageNumber)}
-                    className={`group relative aspect-[3/4] overflow-hidden rounded-lg border-2 bg-white shadow-sm transition-all ${
-                      inRange
-                        ? "border-signal ring-2 ring-signal/30"
-                        : "border-border/60 hover:border-signal/50"
-                    } ${isAnchor ? "ring-2 ring-signal" : ""}`}
-                  >
-                    <img src={url} alt={`Page ${pageNumber}`} className="h-full w-full object-contain" />
-                    {inRange && (
-                      <div className="absolute inset-0 bg-signal/10">
-                        <div className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-signal text-signal-foreground">
-                          <Check className="h-3 w-3" />
+            <>
+              <div className="mb-2 mt-6 text-xs text-muted-foreground">
+                All pages · click one to start a range, click another to finish it
+              </div>
+              <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8">
+                {thumbnails.map((url, i) => {
+                  const pageNumber = i + 1;
+                  const inRange = pageNumber >= from && pageNumber <= to;
+                  const isAnchor = rangeAnchor === pageNumber;
+                  return (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      onClick={() => selectPage(pageNumber)}
+                      className={`group relative aspect-[3/4] overflow-hidden rounded-lg border-2 bg-white shadow-sm transition-all ${
+                        inRange
+                          ? "border-signal ring-2 ring-signal/30"
+                          : "border-border/60 hover:border-signal/50"
+                      } ${isAnchor ? "ring-2 ring-signal" : ""}`}
+                    >
+                      <img src={url} alt={`Page ${pageNumber}`} className="h-full w-full object-contain" />
+                      {inRange && (
+                        <div className="absolute inset-0 bg-signal/10">
+                          <div className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-signal text-signal-foreground">
+                            <Check className="h-3 w-3" />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    <span className="absolute bottom-0.5 left-0.5 rounded bg-card/90 px-1 text-[9px] font-semibold text-muted-foreground">
-                      {pageNumber}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                      )}
+                      <span className="absolute bottom-0.5 left-0.5 rounded bg-card/90 px-1 text-[9px] font-semibold text-muted-foreground">
+                        {pageNumber}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </SingleFilePicker>
       )}
